@@ -136,14 +136,6 @@ def validate_processing_request_creation(processing_request):
     if payload_field not in processing_request:
         raise Conflict(f"The processing request does not have '{payload_field}'")
 
-    payload = processing_request.get(payload_field)
-
-    if ProcessingRequestField.MESSAGE not in payload:
-        raise Conflict(
-            f"The processing request does not have '{ProcessingRequestField.MESSAGE}' "
-            f"inside of '{payload_field}'"
-        )
-
 
 def get_processing_request_or_raise(processing_request_id):
     processing_request = get_processing_request_or_none(processing_request_id)

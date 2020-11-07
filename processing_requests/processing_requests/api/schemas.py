@@ -6,7 +6,6 @@ EXECUTIONS_KEY = "executions"
 class ProcessingRequestField(object):
     ID = "id"
     PAYLOAD = "payload"
-    MESSAGE = "message"
 
 
 class ExecutionField(object):

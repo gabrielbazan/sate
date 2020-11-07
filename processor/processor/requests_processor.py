@@ -96,12 +96,12 @@ class RequestsProcessor(object):
         LOGGER.info("Handling message: '%s'", str(execution))
 
         try:
-            failed, start_time, end_time, total_seconds = RequestsProcessor.process(
+            failed, outputs, start_time, end_time, total_seconds = RequestsProcessor.process(
                 execution
             )
 
             result = RequestsProcessor.build_result(
-                execution, start_time, end_time, total_seconds
+                execution, outputs, start_time, end_time, total_seconds
             )
 
             self.publish_to_result_topic(result, failed)
@@ -140,7 +140,7 @@ class RequestsProcessor(object):
 
         start_time = datetime.utcnow()
 
-        failed = Executor(execution).execute()
+        failed, outputs = Executor(execution).execute()
 
         end_time = datetime.utcnow()
         processing_time_difference = end_time - start_time
@@ -148,16 +148,17 @@ class RequestsProcessor(object):
 
         LOGGER.info("Executed: %s", execution)
 
-        return failed, start_time, end_time, processing_time_seconds
+        return failed, outputs, start_time, end_time, processing_time_seconds
 
     @staticmethod
-    def build_result(execution, start_time, end_time, total_seconds):
+    def build_result(execution, outputs, start_time, end_time, total_seconds):
         return {
             ResultField.ID: generate_identifier(),
             ResultField.START_TIME: str(start_time),
             ResultField.END_TIME: str(end_time),
             ResultField.TOTAL_SECONDS: total_seconds,
-            ResultField.EXECUTION: execution.copy()
+            ResultField.EXECUTION: execution.copy(),
+            ResultField.OUTPUTS: outputs
         }
 
 
@@ -169,13 +170,21 @@ class Executor(object):
     def execute(self):
         Executor.wait(EXECUTION_SLEEP)
         force_error = self.execution.get(EXECUTION_MESSAGE_FORCE_ERROR_KEY)
-        return force_error
+        outputs = Executor.get_outputs(force_error)
+        return force_error, outputs
 
     @staticmethod
     def wait(seconds):
         LOGGER.info("Sleeping for %d seconds...", seconds)
         sleep(seconds)
         LOGGER.info("Done waiting")
+
+    @staticmethod
+    def get_outputs(force_error):
+        outputs = {}
+        if not force_error:
+            outputs[ResultField.OUTPUT_MESSAGE_KEY] = ResultField.OUTPUT_MESSAGE_VALUE
+        return outputs
 
 
 def generate_identifier():
