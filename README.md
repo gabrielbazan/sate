@@ -224,7 +224,6 @@ Example response to the example request body:
     "id": "60e8d09b-7a8d-4580-a6d2-200708e56e7a",
     "force_error": true,
     "creation_date": "2020-11-07 16:31:58.103057",
-    "status": "PUBLISHED",
     "processing_request": {
         "id": "1be8f5ad-9472-4daf-89db-ce6484449940",
         "payload": {
@@ -249,11 +248,6 @@ its own properties, such as:
  * **id**: Unique identifier of the Execution.
  * **force_error**: Whether to simulate an error or not.
  * **creation_date**: When it was created.
- * **status**: When the Execution is saved into the database, its status is CREATED.
-    And once it is published to Kafka, it is updated to PUBLISHED. This status
-    exists in case of the publication to Kafka failed. Possibly there should be
-    a more robust error handling here, like deleting the record from the database
-    if the publication to Kafka failed.
 
 
 #### Query Results

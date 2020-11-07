@@ -70,7 +70,7 @@ def handle_not_found(e):
     return handle_error(e), 404
 
 
-# @app.errorhandler(Exception)
+@app.errorhandler(Exception)
 def handle_uncaught_error(e):
     return handle_error(e), 500
 

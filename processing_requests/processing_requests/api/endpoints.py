@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 import logging
 from uuid import uuid4
-from werkzeug.exceptions import Conflict, NotFound
+from werkzeug.exceptions import Conflict, NotFound, InternalServerError
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from bson.json_util import dumps as bson_dumps
@@ -26,7 +26,6 @@ from api.settings import (
 from api.schemas import (
     ProcessingRequestField,
     ExecutionField,
-    ExecutionStatus,
     EXECUTIONS_KEY,
 )
 
@@ -72,19 +71,21 @@ def create_execution(request_id):
     execution[ExecutionField.PROCESSING_REQUEST] = processing_request
     execution[ExecutionField.CREATION_DATE] = str(datetime.utcnow())
 
-    # Save to mongo (with 'created' status)
-    db_execution = execution.copy()
-    db_execution[ExecutionField.STATUS] = ExecutionStatus.CREATED
-    executions_collection.insert_one(db_execution)
+    # Save to mongo
+    executions_collection.insert_one(execution.copy())
 
-    # Publish to Kafka
-    publish_execution_to_kafka(execution)
-
-    # Update status in mongo (to 'published')
-    update_query = {ExecutionField.ID: identifier}
-    update_values = {"$set": {ExecutionField.STATUS: ExecutionStatus.PUBLISHED}}
-    executions_collection.update_one(update_query, update_values)
-    execution[ExecutionField.STATUS] = ExecutionStatus.PUBLISHED
+    try:
+        publish_execution_to_kafka(execution)
+    except:
+        LOGGER.exception(
+            "Failed to publish %s execution to Kafka. Removing from DB...",
+            identifier,
+        )
+        executions_collection.remove({ExecutionField.ID: identifier})
+        LOGGER.info("Removed %s execution from DB", identifier)
+        raise InternalServerError(
+            "Failed to publish execution to Kafka. Please, try again later."
+        )
 
     return execution, 201
 
