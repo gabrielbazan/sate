@@ -1,0 +1,23 @@
+
+
+MONGODB_HOST = "results_db"
+MONGODB_PORT = 27017
+MONGODB_USERNAME = "results_user"
+MONGODB_PASSWORD = "results_password"
+MONGODB_DATABASE_NAME = "results_db"
+MONGODB_RESULTS_COLLECTION_NAME = "results"
+
+
+KAFKA_BOOTSTRAP_SERVER = "kafka:9092"
+
+KAFKA_VALUE_ENCODING = "utf-8"
+
+KAFKA_SUCCESSES_TOPIC = "successful_executions"
+KAFKA_FAILURES_TOPIC = "failed_executions"
+
+KAFKA_GROUP_ID = "processors"
+KAFKA_AUTO_OFFSET_RESET = "earliest"
+KAFKA_TIMEOUT = 1000
+KAFKA_MAX_RECORDS = 1
+
+RESULT_IS_SUCCESS_KEY = "is_success"
